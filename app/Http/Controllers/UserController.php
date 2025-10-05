@@ -2,42 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\UserModel;
 use App\Models\Kelas;
+use App\Models\UserModel;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        $users = UserModel::join('kelas', 'kelas.id', '=', 'user.kelas_id')
-            ->select('user.*', 'kelas.nama_kelas')
-            ->get();
+    public $userModel;
+    public $kelasModel;
 
-        return view('list_user', [
-            'title' => 'Daftar User',
-            'users' => $users
-        ]);
+    public function __construct()
+    {
+        $this->userModel = new UserModel();
+        $this->kelasModel = new Kelas();
     }
 
-    public function create()
-    {
-        $kelas = Kelas::all();
-
-        return view('create_user', [
+    public function create(){
+        $kelasModel = new Kelas();
+        $kelas = $kelasModel->getKelas();
+        $data = [
             'title' => 'Create User',
-            'kelas' => $kelas
-        ]);
+            'kelas' => $kelas,
+        ];
+        return view('create_user', $data);
     }
 
-    public function store(Request $request)
-    {
-        UserModel::create([
-            'nama' => $request->nama,
-            'nim'  => $request->npm,     // kolom di DB nim, input di form npm
-            'kelas_id' => $request->kelas_id,
+    public function store(Request $request){
+        $this->userModel->create([
+            'nama' => $request->input('nama'),
+            'nim' => $request->input('nim'),
+            'kelas_id' => $request->input('kelas_id'),
         ]);
+        return redirect()->to('/user');
+    }
 
-        return redirect('/user')->with('success', 'User berhasil ditambahkan!');
+    public function index(){
+        $data = [
+            'title' => 'List User',
+            'users' => $this->userModel->getUser(),
+        ];
+        return view('list_user', $data);
     }
 }
