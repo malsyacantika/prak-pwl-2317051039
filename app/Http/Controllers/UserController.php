@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kelas;
-use App\Models\UserModel;
 use Illuminate\Http\Request;
+use App\Models\UserModel;
+use App\Models\Kelas;
 
 class UserController extends Controller
 {
-    public $userModel;
-    public $kelasModel;
+    protected $userModel;
+    protected $kelasModel;
 
     public function __construct()
     {
@@ -17,30 +17,75 @@ class UserController extends Controller
         $this->kelasModel = new Kelas();
     }
 
-    public function create(){
-        $kelasModel = new Kelas();
-        $kelas = $kelasModel->getKelas();
-        $data = [
-            'title' => 'Create User',
-            'kelas' => $kelas,
-        ];
-        return view('create_user', $data);
+    // 🔹 Tampilkan semua user
+    public function index()
+    {
+        $users = $this->userModel->getUser();
+        $kelas = $this->kelasModel->getKelas();
+
+        return view('list_user', compact('users', 'kelas'));
     }
 
-    public function store(Request $request){
-        $this->userModel->create([
-            'nama' => $request->input('nama'),
-            'nim' => $request->input('nim'),
-            'kelas_id' => $request->input('kelas_id'),
+    // 🔹 Halaman form tambah user
+    public function create()
+    {
+        $kelas = $this->kelasModel->getKelas();
+        return view('create_user', compact('kelas'));
+    }
+
+    // 🔹 Simpan user baru
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'npm' => 'required|string|max:20|unique:users,npm',
+            'kelas_id' => 'required|exists:kelas,id',
         ]);
-        return redirect()->to('/user');
+
+        $this->userModel->create([
+            'nama' => $request->nama,
+            'npm' => $request->npm,
+            'kelas_id' => $request->kelas_id,
+        ]);
+
+        return redirect()->route('user.index')->with('success', 'Mahasiswa berhasil ditambahkan!');
     }
 
-    public function index(){
-        $data = [
-            'title' => 'List User',
-            'users' => $this->userModel->getUser(),
-        ];
-        return view('list_user', $data);
+    // 🔹 Halaman edit user
+    public function edit($id)
+    {
+        $user = $this->userModel->findOrFail($id);
+        $kelas = $this->kelasModel->getKelas();
+
+        return view('edit_user', compact('user', 'kelas'));
+    }
+
+    // 🔹 Update data user
+    public function update(Request $request, $id)
+    {
+        $user = $this->userModel->findOrFail($id);
+
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'npm' => 'required|string|max:20|unique:users,npm,' . $id,
+            'kelas_id' => 'required|exists:kelas,id',
+        ]);
+
+        $user->update([
+            'nama' => $request->nama,
+            'npm' => $request->npm,
+            'kelas_id' => $request->kelas_id,
+        ]);
+
+        return redirect()->route('user.index')->with('success', 'Data mahasiswa berhasil diperbarui!');
+    }
+
+    // 🔹 Hapus user
+    public function destroy($id)
+    {
+        $user = $this->userModel->findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('user.index')->with('success', 'Data mahasiswa berhasil dihapus!');
     }
 }

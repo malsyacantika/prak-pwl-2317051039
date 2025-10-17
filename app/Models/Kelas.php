@@ -3,20 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class kelas extends Model
+class Kelas extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
+    protected $table = 'kelas'; 
     protected $guarded = ['id'];
+    public $incrementing = false;
+    protected $keyType = 'string'; 
 
     public function user()
     {
         return $this->hasMany(UserModel::class, 'kelas_id');
-    }   
+    }
 
-    public function getKelas(){
+    public function getKelas()
+    {
         return $this->all();
     }
 }
