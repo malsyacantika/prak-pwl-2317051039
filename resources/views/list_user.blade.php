@@ -1,32 +1,51 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-6 py-6">
-    <h1 class="text-center fw-bold mb-5" style="color: #ff69b4;">Daftar User</h1>
+<div class="container mt-4">
+    <h2 class="fw-bold text-dark mb-3 text-center">Daftar Mahasiswa</h2>
+    <a href="{{ route('user.create') }}" class="btn btn-primary mb-3 rounded-pill">+ Tambah Mahasiswa</a>
 
-    <div class="card shadow-lg border-0" style="border-radius: 20px; background: linear-gradient(135deg, #ffe6f0, #fff0f5);">
-        <div class="card-body p-4" style="border-radius: 20px;">
-            @if($users->isEmpty())
-                <p class="text-center fw-semibold" style="color: #e75480;">Belum ada data pengguna.</p>
-            @else
-                {{-- Komponen tabel user --}}
-                @include('components.user-table', ['users' => $users])
-            @endif
-        </div>
-    </div>
+    <table class="table table-bordered text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>NPM</th>
+                <th>Kelas</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($users as $user)
+            <tr>
+                <td>{{ $user->id }}</td>
+                <td>{{ $user->nama }}</td>
+                <td>{{ $user->npm }}</td>
+                <td>{{ $user->nama_kelas }}</td>
+                <td>
+                    <a href="{{ route('user.edit', $user->id) }}" class="btn btn-warning btn-sm rounded-pill">Edit</a>
+                    <form action="{{ route('user.destroy', $user->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill"
+                            onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</button>
+                    </form>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 
-<style>
-.card {
-    transition: all 0.3s ease;
-}
-.card:hover {
-    transform: scale(1.01);
-    box-shadow: 0 10px 20px rgba(255, 182, 193, 0.5);
-}
-h1 {
-    letter-spacing: 1px;
-    font-family: 'Poppins', sans-serif;
-}
-</style>
+@if(session('success'))
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: "{{ session('success') }}",
+    showConfirmButton: false,
+    timer: 2000
+});
+</script>
+@endif
 @endsection
